@@ -83,6 +83,28 @@ except Exception as e:
 "
 fi
 
+# Configure STT provider if VOICE_TOOLS_OPENAI_KEY is set
+if [ -n "$VOICE_TOOLS_OPENAI_KEY" ]; then
+    echo "Configuring STT provider: openai"
+    python3 -c "
+import yaml
+import os
+config_path = '$HERMES_HOME/config.yaml'
+try:
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f) or {}
+    if 'stt' not in config:
+        config['stt'] = {}
+    config['stt']['enabled'] = True
+    config['stt']['provider'] = 'openai'
+    with open(config_path, 'w') as f:
+        yaml.dump(config, f)
+    print('STT provider configured: openai')
+except Exception as e:
+    print(f'Warning: Could not configure STT in config.yaml: {e}')
+"
+fi
+
 # Sync bundled skills (manifest-based so user edits are preserved)
 if [ -d "$INSTALL_DIR/skills" ]; then
     python3 "$INSTALL_DIR/tools/skills_sync.py"
