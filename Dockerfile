@@ -40,3 +40,4 @@ RUN chmod +x /opt/hermes/docker/entrypoint.sh
 ENV HERMES_HOME=/opt/data
 # VOLUME [ "/opt/data" ] # Commented out for Railway compatibility
 ENTRYPOINT [ "/opt/hermes/docker/entrypoint.sh" ]
+CMD [ "gateway", "run" ]
