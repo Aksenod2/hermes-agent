@@ -63,6 +63,26 @@ if [ ! -f "$HERMES_HOME/SOUL.md" ]; then
     cp "$INSTALL_DIR/docker/SOUL.md" "$HERMES_HOME/SOUL.md"
 fi
 
+# Override model in config.yaml if HERMES_MODEL is set
+if [ -n "$HERMES_MODEL" ]; then
+    echo "Overriding model in config.yaml to: $HERMES_MODEL"
+    python3 -c "
+import yaml
+config_path = '$HERMES_HOME/config.yaml'
+try:
+    with open(config_path, 'r') as f:
+        config = yaml.safe_load(f) or {}
+    if 'model' not in config:
+        config['model'] = {}
+    config['model']['default'] = '$HERMES_MODEL'
+    with open(config_path, 'w') as f:
+        yaml.dump(config, f)
+    print(f'Updated model to: $HERMES_MODEL')
+except Exception as e:
+    print(f'Warning: Could not update model in config.yaml: {e}')
+"
+fi
+
 # Sync bundled skills (manifest-based so user edits are preserved)
 if [ -d "$INSTALL_DIR/skills" ]; then
     python3 "$INSTALL_DIR/tools/skills_sync.py"
