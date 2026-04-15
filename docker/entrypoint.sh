@@ -83,12 +83,29 @@ except Exception as e:
 "
 fi
 
-# Configure STT provider if VOICE_TOOLS_OPENAI_KEY is set
-if [ -n "$VOICE_TOOLS_OPENAI_KEY" ]; then
-    echo "Configuring STT provider: openai"
+# Configure STT provider if API key is available
+if [ -n "$OPENAI_API_KEY" ] || [ -n "$VOICE_TOOLS_OPENAI_KEY" ]; then
+    echo "=== STT Configuration ==="
+    if [ -n "$OPENAI_API_KEY" ]; then
+        echo "Found OPENAI_API_KEY for STT"
+    elif [ -n "$VOICE_TOOLS_OPENAI_KEY" ]; then
+        echo "Found VOICE_TOOLS_OPENAI_KEY for STT"
+    fi
+
+    if [ -n "$STT_OPENAI_BASE_URL" ]; then
+        echo "STT Base URL: $STT_OPENAI_BASE_URL"
+    else
+        echo "STT Base URL: (default) https://api.openai.com/v1"
+    fi
+
+    if [ -n "$STT_OPENAI_MODEL" ]; then
+        echo "STT Model: $STT_OPENAI_MODEL"
+    else
+        echo "STT Model: (default) whisper-1"
+    fi
+
     python3 -c "
 import yaml
-import os
 config_path = '$HERMES_HOME/config.yaml'
 try:
     with open(config_path, 'r') as f:
@@ -99,10 +116,13 @@ try:
     config['stt']['provider'] = 'openai'
     with open(config_path, 'w') as f:
         yaml.dump(config, f)
-    print('STT provider configured: openai')
+    print('✓ STT provider configured: openai')
 except Exception as e:
-    print(f'Warning: Could not configure STT in config.yaml: {e}')
+    print(f'✗ Warning: Could not configure STT: {e}')
 "
+    echo "========================="
+else
+    echo "⚠ No STT API key found (OPENAI_API_KEY or VOICE_TOOLS_OPENAI_KEY)"
 fi
 
 # Sync bundled skills (manifest-based so user edits are preserved)
